@@ -12,7 +12,7 @@ import (
 func Execute() {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage:")
-		fmt.Println("  kickstart createproject <project-name>       - Create initial project structure")
+		fmt.Println("  kickstart init-project <project-name>       - Create initial project structure")
 		fmt.Println("  kickstart addchart <project-name> <chart-name> - Add a new chart")
 		fmt.Println("  kickstart addapp <project-name> <app-name>     - Add a new application")
 		return
@@ -21,9 +21,9 @@ func Execute() {
 	command := os.Args[1]
 
 	switch command {
-	case "createproject":
+	case "init-project":
 		if len(os.Args) != 3 {
-			fmt.Println("Usage: kickstart createproject <project-name>")
+			fmt.Println("Usage: kickstart init-project <project-name>")
 			return
 		}
 		projectName := os.Args[2]
@@ -31,9 +31,9 @@ func Execute() {
 			fmt.Printf("Error creating project structure: %v\n", err)
 		}
 
-	case "addchart":
+	case "add-chart":
 		if len(os.Args) != 4 {
-			fmt.Println("Usage: kickstart addchart <project-name> <chart-name>")
+			fmt.Println("Usage: kickstart add-chart <project-name> <chart-name>")
 			return
 		}
 		projectName := os.Args[2]
@@ -42,9 +42,9 @@ func Execute() {
 			fmt.Printf("Error adding chart: %v\n", err)
 		}
 
-	case "addapp":
+	case "add-app":
 		if len(os.Args) != 4 {
-			fmt.Println("Usage: kickstart addapp <project-name> <app-name>")
+			fmt.Println("Usage: kickstart add-app <project-name> <app-name>")
 			return
 		}
 		projectName := os.Args[2]
@@ -55,8 +55,8 @@ func Execute() {
 
 	default:
 		fmt.Println("Invalid command. Use one of the following:")
-		fmt.Println("  kickstart createproject <project-name>       - Create initial project structure")
-		fmt.Println("  kickstart addchart <project-name> <chart-name> - Add a new chart")
-		fmt.Println("  kickstart addapp <project-name> <app-name>     - Add a new application")
+		fmt.Println("  kickstart init-project <project-name>       - Create initial project structure")
+		fmt.Println("  kickstart add-chart <project-name> <chart-name> - Add a new chart")
+		fmt.Println("  kickstart add-app <project-name> <app-name>     - Add a new application")
 	}
 }
