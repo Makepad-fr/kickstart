@@ -12,7 +12,7 @@ create-out-directory:
 
 build: create-out-directory
 	@echo "Building the binary..."
-	go build -o $(BINARY_PATH) main.go
+	go build -ldflags="-X 'skaffold.latestSkaffoldVersion=$(SKAFFOLD_YAML_VERSION)'" -o $(BINARY_PATH) main.go
 
 clean:
 	@echo "Cleaning up..."
