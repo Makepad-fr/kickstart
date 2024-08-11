@@ -80,7 +80,7 @@ func main() {
 
 func createDockerfile(dockerfilePath string) error {
 	const dockerfileTemplate = `# Start with the official Golang image
-FROM golang:1.20-alpine as builder
+FROM golang:1.22-bookworm as builder
 
 # Set the working directory inside the container
 WORKDIR /app
