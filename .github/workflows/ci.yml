@@ -35,7 +35,7 @@ jobs:
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/kickstart-${{ matrix.goos }}-${{ matrix.goarch }} main.go
 
       - name: Run tests
-        run: go test ./...
+        run: make test
 
       - name: Upload artifact (only for release)
         if: github.event_name == 'release'
