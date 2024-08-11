@@ -28,7 +28,7 @@ test: clean build e2e
 	go test ./...
 
 .PHONY: e2e
-e2e: create-test-project skaffold-test-project run-helm-lint-on-created-project
+e2e: create-test-project skaffold-test-project run-helm-lint-on-created-project test-application
 
 .PHONY: create-test-project
 create-test-project:
@@ -45,13 +45,18 @@ run-helm-lint-on-created-project:
 
 .PHONY: skaffold-test-project
 skaffold-test-project:
-	@echo "Navigating to the created project"
-	cd ./test-project && skaffold diagnose
 	@echo "Running skaffold diagnose"
+	cd ./test-project && skaffold diagnose
 
 
+.PHONY: test-add-application
+test-application:
+	@echo "Adding test application to the project"
+	cd ./test-project && ../out/kickstart add-app server
+	@echo "Building the project with skaffold"
+	cd ./test-project && skaffold build
 
-.PHONY: 
+.PHONY: insall
 install: build
 	@echo "Installing the binary..."
 	sudo install -m 0755 $(BINARY_PATH) $(INSTALL_PATH)
