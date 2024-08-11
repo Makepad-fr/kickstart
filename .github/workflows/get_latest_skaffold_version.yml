@@ -1,0 +1,45 @@
+name: Update Version
+
+permissions:
+    contents: write
+    actions: write
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs every hour (adjust as needed)
+  workflow_dispatch: # Allows manual trigger of the workflow
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v3
+
+      - name: Checkout external repository with depth 1
+        uses: actions/checkout@v3
+        with:
+          repository: GoogleContainerTools/skaffold # External repository
+          path: external-repo
+          ref: main # Replace with the branch name if different
+          fetch-depth: 1 # Only fetch the latest commit
+
+      - name: Parse version from markdown file
+        id: parse_version
+        run: |
+          version=$(grep -Eo "\-\-version='skaffold/(v[0-9a-zA-Z]+)'" external-repo/docs-v2/content/en/docs/references/cli/_index.md | sed -E "s/--version='skaffold\/(v[0-9a-zA-Z]+)'/\1/")
+            echo "VERSION=$version" >> $GITHUB_ENV
+      - name: Update GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
+
+      - name: Check gh CLI version
+        run: gh --version
+
+      - name: Authenticate GitHub CLI
+        run: gh auth login --with-token <<< ${{ secrets.ADMIN_PAT }}
+
+      - name: Update GitHub Secret
+        run: |
+          gh variable set SKAFFOLD_YAML_VERSION --body "$VERSION" --repo ${{ github.repository }}
