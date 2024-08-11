@@ -24,6 +24,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # TODO: Move this to a separate re-usable action
+      - name: Cache Skaffold
+        id: cache-skaffold
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/bin/skaffold
+          key: skaffold-${{ runner.os }}-${{ hashFiles('**/skaffold.yaml') }}
+
+      - name: Install Skaffold
+        if: steps.cache-skaffold.outputs.cache-hit != 'true'
+        run: |
+          curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+          chmod +x skaffold
+          sudo mv skaffold /usr/local/bin
+
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
