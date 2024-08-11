@@ -23,8 +23,8 @@ jobs:
       - name: Parse version from markdown file
         id: parse_version
         run: |
-          version=$(grep -Eo "--version='skaffold/(v[0-9a-zA-Z]+)'" external-repo/docs-v2/content/en/docs/references/cli/_index.md | sed -E "s/--version='skaffold\/(v[0-9a-zA-Z]+)'/\1/")
-          echo "VERSION=$version" >> $GITHUB_ENV
+          version=$(grep -Eo "\-\-version='skaffold/(v[0-9a-zA-Z]+)'" external-repo/docs-v2/content/en/docs/references/cli/_index.md | sed -E "s/--version='skaffold\/(v[0-9a-zA-Z]+)'/\1/")
+            echo "VERSION=$version" >> $GITHUB_ENV
 
       - name: Update repository environment variable
         run: |
