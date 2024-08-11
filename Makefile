@@ -22,9 +22,19 @@ run:
 	@echo "Running the CLI..."
 	./$(BINARY_PATH)
 
-test:
+test: clean build skaffold-test-project
 	@echo "Running tests..."
+
 	go test ./...
+
+.PHONY: skaffold-test-project
+skaffold-test-project:
+	@echo "Testing the skaffold file format by creating a project"
+	@echo "Creating a new project"
+	./out/kickstart init-project test-project
+	@echo "Navigating to the created project"
+	cd ./test-project && skaffold diagnose
+	@echo "Running skaffold diagnose"
 
 install: build
 	@echo "Installing the binary..."
