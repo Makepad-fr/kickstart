@@ -59,6 +59,8 @@ type GitHubFileContent struct {
 	Encoding string `json:"encoding"`
 }
 
+var latestSkaffoldVersion string
+
 func getLatestSkaffoldYamlVersion() (string, error) {
 	// GitHub API URL for the specific file
 	url := "https://api.github.com/repos/GoogleContainerTools/skaffold/contents/docs-v2/content/en/docs/references/cli/_index.md"
@@ -104,7 +106,7 @@ func InitializeSkaffold(skaffoldPath string) error {
 	skaffoldYamlVersion, err := getLatestSkaffoldYamlVersion()
 	if err != nil {
 		log.Printf("Error while getting latest version from GitHub: %v", err)
-		return err
+		skaffoldYamlVersion = latestSkaffoldVersion
 	}
 	initialContent := SkaffoldConfig{
 		APIVersion: fmt.Sprintf("skaffold/%s", skaffoldYamlVersion),
