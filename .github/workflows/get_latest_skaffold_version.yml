@@ -25,6 +25,13 @@ jobs:
         run: |
           version=$(grep -Eo "\-\-version='skaffold/(v[0-9a-zA-Z]+)'" external-repo/docs-v2/content/en/docs/references/cli/_index.md | sed -E "s/--version='skaffold\/(v[0-9a-zA-Z]+)'/\1/")
             echo "VERSION=$version" >> $GITHUB_ENV
+      - name: Update GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
+
+      - name: Check gh CLI version
+        run: gh --version
 
       - name: Update repository environment variable
         run: |
