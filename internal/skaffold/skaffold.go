@@ -14,9 +14,30 @@ import (
 )
 
 type SkaffoldConfig struct {
-	APIVersion string `yaml:"apiVersion"` // Change to lowercase
+	APIVersion string `yaml:"apiVersion"`
 	Kind       string `yaml:"kind"`
+	Build      Build  `yaml:"build"`
 	Deploy     Deploy `yaml:"deploy"`
+}
+
+type Build struct {
+	Local     Local      `yaml:"local"`
+	Artifacts []Artifact `yaml:"artifacts"`
+}
+
+type Local struct {
+	Push        bool `yaml:"push"`
+	Concurrency int  `yaml:"concurrency"`
+}
+
+type Artifact struct {
+	ImageName string `yaml:"image"`
+	Context   string `yaml:"context"`
+	Docker    Docker `yaml:"docker"`
+}
+
+type Docker struct {
+	Dockerfile string `yaml:"dockerfile"`
 }
 
 type Deploy struct {
@@ -88,6 +109,13 @@ func InitializeSkaffold(skaffoldPath string) error {
 	initialContent := SkaffoldConfig{
 		APIVersion: fmt.Sprintf("skaffold/%s", skaffoldYamlVersion),
 		Kind:       "Config",
+		Build: Build{
+			Local: Local{
+				Push:        false,
+				Concurrency: 0,
+			},
+			Artifacts: []Artifact{},
+		},
 		Deploy: Deploy{
 			Helm: Helm{
 				Releases: []Release{},
@@ -141,13 +169,15 @@ func UpdateSkaffoldForApp(skaffoldPath, appName string) error {
 		return err
 	}
 
-	// Assuming we want to add something specific for the application to skaffold.yaml
-	// Here we add an application like a Helm release
-	newRelease := Release{
-		Name:      appName,
-		ChartPath: filepath.Join("applications", appName),
+	// Add the new Docker artifact without specifying a tag
+	newArtifact := Artifact{
+		ImageName: appName, // Do not include a tag like ":latest"
+		Context:   filepath.Join("applications", appName),
+		Docker: Docker{
+			Dockerfile: "Dockerfile",
+		},
 	}
-	config.Deploy.Helm.Releases = append(config.Deploy.Helm.Releases, newRelease)
+	config.Build.Artifacts = append(config.Build.Artifacts, newArtifact)
 
 	// Marshal back to YAML
 	updatedData, err := yaml.Marshal(&config)
