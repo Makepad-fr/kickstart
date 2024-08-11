@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -70,9 +71,14 @@ func getLatestSkaffoldYamlVersion() (string, error) {
 	}
 	defer resp.Body.Close()
 
+	responseContentBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("Error while reading the response body")
+		return "", err
+	}
 	// Check if the request was successful
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("error: unable to fetch the file. Status code: %d", resp.StatusCode)
+		return "", fmt.Errorf("error: unable to fetch the file. Status code: %d. Body: %s", resp.StatusCode, string(responseContentBytes))
 	}
 
 	// Decode the JSON response

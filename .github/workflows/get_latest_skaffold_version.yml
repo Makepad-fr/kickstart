@@ -1,0 +1,34 @@
+name: Update Version
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs every hour (adjust as needed)
+  workflow_dispatch: # Allows manual trigger of the workflow
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v3
+
+      - name: Checkout external repository with depth 1
+        uses: actions/checkout@v3
+        with:
+          repository: GoogleContainerTools/skaffold # External repository
+          path: external-repo
+          ref: main # Replace with the branch name if different
+          fetch-depth: 1 # Only fetch the latest commit
+
+      - name: Parse version from markdown file
+        id: parse_version
+        run: |
+          version=$(grep -Eo "--version='skaffold/(v[0-9a-zA-Z]+)'" external-repo/docs-v2/content/en/docs/references/cli/_index.md | sed -E "s/--version='skaffold\/(v[0-9a-zA-Z]+)'/\1/")
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+      - name: Update repository environment variable
+        run: |
+          echo "VERSION=$VERSION"
+          gh api -X PUT "/repos/${{ github.repository }}/actions/variables/VERSION" -f name=VERSION -f value="$VERSION"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
