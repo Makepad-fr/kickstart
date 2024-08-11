@@ -22,20 +22,36 @@ run:
 	@echo "Running the CLI..."
 	./$(BINARY_PATH)
 
-test: clean build skaffold-test-project
+test: clean build e2e
 	@echo "Running tests..."
 
 	go test ./...
 
-.PHONY: skaffold-test-project
-skaffold-test-project:
+.PHONY: e2e
+e2e: create-test-project skaffold-test-project run-helm-lint-on-created-project
+
+.PHONY: create-test-project
+create-test-project:
 	@echo "Testing the skaffold file format by creating a project"
 	@echo "Creating a new project"
 	./out/kickstart init-project test-project
+	
+.PHONY: run-helm-lint-on-created-project
+run-helm-lint-on-created-project:
+	@echo "Adding a test chart to the project"
+	cd ./test-project && ../out/kickstart add-chart server
+	@echo "Running helm lint on the created chart"
+	helm lint ./test-project/charts/server
+
+.PHONY: skaffold-test-project
+skaffold-test-project:
 	@echo "Navigating to the created project"
 	cd ./test-project && skaffold diagnose
 	@echo "Running skaffold diagnose"
 
+
+
+.PHONY: 
 install: build
 	@echo "Installing the binary..."
 	sudo install -m 0755 $(BINARY_PATH) $(INSTALL_PATH)
