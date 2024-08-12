@@ -4,14 +4,13 @@ on:
   push:
     paths:
       - '**.go'
+    tags:
+      - 'v*.*.*'  # Triggers the workflow on version tags (e.g., v1.0.0)
+
   pull_request:
     paths:
       - '**.go'
       - '.github/workflows/**'
-      
-
-  release:
-    types: [created]
 
 jobs:
   build:
@@ -43,7 +42,6 @@ jobs:
           chmod +x skaffold
           sudo mv skaffold /usr/local/bin
 
-
       - name: Set up Go
         uses: actions/setup-go@v5.0.2
         with:
@@ -51,34 +49,135 @@ jobs:
 
       - name: Build binary
         run: |
-          mkdir -p dist
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/kickstart-${{ matrix.goos }}-${{ matrix.goarch }} main.go
+            mkdir -p dist
+            BINARY_NAME="kickstart-${{ matrix.goos }}-${{ matrix.goarch }}"
+            if [[ "${{ matrix.goos }}" == "windows" ]]; then
+              BINARY_NAME="${BINARY_NAME}.exe"
+            fi
+            GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/${BINARY_NAME} main.go
 
       - name: Run tests
         run: make test
 
-      - name: Upload artifact (only for release)
-        if: github.event_name == 'release'
-        uses: actions/upload-artifact@v4.3.6
+      - name: Upload build artifacts
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v3
         with:
-          name: kickstart-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/kickstart-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: |
+            kickstart-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
+          path: |
+            dist/kickstart-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
 
   release:
-    name: Create GitHub Release
+    name: Create Release and Upload Assets
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4.1.16
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download Linux AMD64 Artifact
+        uses: actions/download-artifact@v3
         with:
-          path: dist
+          name: kickstart-linux-amd64
+
+      - name: Download Linux ARM64 Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: kickstart-linux-arm64
+
+      - name: Download Darwin AMD64 Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: kickstart-darwin-amd64
+
+      - name: Download Darwin ARM64 Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: kickstart-darwin-arm64
+
+      - name: Download Windows AMD64 Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: kickstart-windows-amd64.exe
+
+      - name: Download Windows ARM64 Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: kickstart-windows-arm64.exe
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2.0.8
-        with:
-          files: dist/*
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          draft: true
+          prerelease: false
+
+      - name: List files in dist directory
+        run: ls -la ./
+
+      - name: Upload Linux AMD64 Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./kickstart-linux-amd64
+          asset_name: kickstart-linux-amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux ARM64 Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./kickstart-linux-arm64
+          asset_name: kickstart-linux-arm64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Darwin AMD64 Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./kickstart-darwin-amd64
+          asset_name: kickstart-darwin-amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Darwin ARM64 Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./kickstart-darwin-arm64
+          asset_name: kickstart-darwin-arm64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows AMD64 Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./kickstart-windows-amd64.exe
+          asset_name: kickstart-windows-amd64.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows ARM64 Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./kickstart-windows-arm64.exe
+          asset_name: kickstart-windows-arm64.exe
+          asset_content_type: application/octet-stream
