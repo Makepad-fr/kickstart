@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Makepad-fr/kickstart/internal"
 	"github.com/Makepad-fr/kickstart/internal/application"
 	"github.com/Makepad-fr/kickstart/internal/chart"
 	"github.com/Makepad-fr/kickstart/internal/project"
@@ -19,6 +20,8 @@ func Execute() {
 	command := os.Args[1]
 
 	switch command {
+	case "version":
+		fmt.Println(internal.CLIVersion)
 	case "init-project":
 		if len(os.Args) != 3 {
 			fmt.Println("Usage: kickstart init-project <project-name>")
