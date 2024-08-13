@@ -1,5 +1,9 @@
 <p align="center">
-<img src="./kickstart.png"/>
+    <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="kickstart_dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="./kickstart_light.png">
+    <img alt="Shows an illustrated sun in light mode and a moon with stars in dark mode." src="./kickstart_light.png">
+    </picture>
 </p>
 
 # Getting started
