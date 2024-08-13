@@ -8,9 +8,11 @@
 
 # Getting started
 
-You can use either `make install` after cloned the project to install in your local machine or get the binary file for your system from [the latest release](https://github.com/Makepad-fr/kickstart/releases/latest)
-
 ## Installing Kickstart
+
+You can use either `make install` after cloned the project to install in your local machine or get the binary file for your system from [the latest release](https://github.com/Makepad-fr/kickstart/releases/latest). 
+
+More installing options (`apt`, `homebrew`, `chocolatey`, `snap` etc.)  will come soon.
 
 ## How to use?
 
